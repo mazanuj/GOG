@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GogLib.DataTypes;
 using GogLib.Http;
 using GogLib.Utilities;
 using Newtonsoft.Json.Linq;
@@ -14,10 +15,8 @@ namespace GogLib
     {
         private static readonly object Locker = new object();
 
-        public static async Task<Dictionary<string, string>> InitializTask(IEnumerable<string> codes,
-            IEnumerable<string> proxies, int dop)
+        public static async Task InitializTask(IEnumerable<string> codes, IEnumerable<string> proxies, int dop)
         {
-            var resultList = new Dictionary<string, string>();
             try
             {
                 var reqList = await ProxyHelper.GetRequestList(proxies);
@@ -28,30 +27,45 @@ namespace GogLib
                     try
                     {
                         HttpRequest req;
+                        var challenge = string.Empty;
                         lock (Locker)
                         {
                             req = reqList[0];
                             reqList.Move(req);
+
+                            while (Utils.IsPermit)
+                            {
+                                if (Utils.CaptchaQueueCount > 0)
+                                {
+                                    challenge = Utils.CaptchaQueue.Challenge;
+                                    break;
+                                }
+                                Task.Delay(500).Wait();
+                            }
                         }
-                        result = await MainRequest.Get(code, req, "");
+
+                        if (!Utils.IsPermit)
+                            return;
+
+                        result = await MainRequest.Get(code, req, challenge);
 
                         dynamic json = JObject.Parse(result);
-                        result = json.products[0]["title"].ToString();                        
+                        result = json.products[0]["title"].ToString();
                     }
                     catch (Exception)
                     {
                         result = "Invalid";
                     }
 
-                    resultList.Add(code, result);
+                    var res = new MenuStruct {Code = code, Result = result};
+                    Informer.RaiseStrReceived(res);
+                    Utils.Result.Add(res);
                 });
             }
             catch (Exception ex)
             {
                 Informer.RaiseOnResultReceived(ex);
             }
-
-            return resultList;
         }
     }
 }

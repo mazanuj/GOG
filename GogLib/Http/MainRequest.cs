@@ -17,7 +17,7 @@ namespace GogLib.Http
                 }
                 catch (Exception ex)
                 {
-                    Informer.RaiseOnResultReceived(ex);
+                    //Informer.RaiseOnResultReceived(ex);
                     return string.Empty;
                 }
             });

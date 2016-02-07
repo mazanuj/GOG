@@ -1,4 +1,5 @@
 ﻿using System;
+using GogLib.DataTypes;
 
 namespace GogLib.Utilities
 {
@@ -6,7 +7,16 @@ namespace GogLib.Utilities
     {
         public delegate void InformMethodStr(string str);
 
+        public delegate void InformMethodStruct(MenuStruct str);
+
         public static event InformMethodStr OnResultStr;
+        public static event InformMethodStruct OnResultStruct;
+
+        public static void RaiseStrReceived(MenuStruct str)
+        {
+            var handler = OnResultStruct;
+            handler?.Invoke(str);
+        }
 
         public static void RaiseOnResultReceived(string str)
         {
