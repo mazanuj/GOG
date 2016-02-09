@@ -18,7 +18,6 @@ namespace GogLib.CaptchaHelper
         private static Queue GetCaptchaQueue = new Queue();
         private static readonly object Locker = new object();
         private static readonly object LockerQueue = new object();
-        private static IWebDriver WebDriverQueue = Utils.WebDriverQueue;
         private const int PictureOpen = 3000;
 
         public static async Task<string> GetBalance(string agKey, string service)

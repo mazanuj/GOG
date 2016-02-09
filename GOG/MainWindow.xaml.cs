@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -13,6 +15,7 @@ using GogLib;
 using GogLib.CaptchaHelper;
 using GogLib.DataTypes;
 using GogLib.Utilities;
+using GOG.Annotations;
 using GOG.Properties;
 using Microsoft.Win32;
 using OpenQA.Selenium.Chrome;
@@ -23,12 +26,45 @@ namespace GOG
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow
+    public sealed partial class MainWindow : INotifyPropertyChanged
     {
+        private string all = "0";
+        private string curr = "0";
         private Timer CaptchaTimer { get; }
-        private IEnumerable<string> Codes { get; set; }
+        private IEnumerable<string> codes = new List<string>();
         private IEnumerable<string> Proxies { get; set; }
         public ObservableCollection<MenuStruct> DataItemsMenu { get; }
+
+        private IEnumerable<string> Codes
+        {
+            get { return codes; }
+            set
+            {
+                codes = value;
+                All = Codes.Count().ToString();
+                OnPropertyChanged();
+            }
+        }
+
+        public string All
+        {
+            get { return all; }
+            set
+            {
+                all = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Curr
+        {
+            get { return curr; }
+            set
+            {
+                curr = value;
+                OnPropertyChanged();
+            }
+        }
 
         public MainWindow()
         {
@@ -38,7 +74,7 @@ namespace GOG
             DataItemsMenu = new ObservableCollection<MenuStruct>();
             InitializeComponent();
             DataGridMenu.ItemsSource = DataItemsMenu;
-            ButtonStop.IsEnabled = false;
+            ButtonStop.IsEnabled = false;            
 
             CaptchaTimer = new Timer
             {
@@ -51,6 +87,12 @@ namespace GOG
                     await
                         Application.Current.Dispatcher.BeginInvoke(
                             new Action(() => DataItemsMenu.Insert(0, new MenuStruct {Result = result})));
+
+            Informer.OnCountChanged +=
+                async result =>
+                    await
+                        Application.Current.Dispatcher.BeginInvoke(
+                            new Action(() => Curr = result));
 
             Informer.OnResultStruct +=
                 async result =>
@@ -130,7 +172,7 @@ namespace GOG
             {
                 try
                 {
-                    await MainCycle.InitializTask(Codes, Proxies, Settings.Default.CaptchaNum);                                      
+                    await MainCycle.InitializTask(Codes, Proxies, Settings.Default.CaptchaNum);
                 }
                 catch (Exception ex)
                 {
@@ -147,17 +189,11 @@ namespace GOG
             drStr.IsEnabled = false;
             var result = await GetCaptcha.GetNoCaptcha(Settings.Default.AntigateKey, drStr);
 
-            if (result.Answer.StartsWith("Error message"))
-            {
+            drStr.IsEnabled = true;
+            if (result.Answer.StartsWith("Error message") && !result.Answer.Contains("Stopped") &&
+                !result.Answer.Contains("Отменена задача"))
                 Informer.RaiseOnResultReceived(result.Answer);
-                if (result.Answer.Contains("Stopped"))
-                    drStr.IsEnabled = true;
-            }
-            else
-            {
-                Utils.CaptchaQueue = result;
-                drStr.IsEnabled = true;
-            }
+            else Utils.CaptchaQueue = result;
         }
 
         private static void CaptchaTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -176,7 +212,7 @@ namespace GOG
                     foreach (var source in Utils.DriverList.Where(x => x.IsEnabled))
                         GetNoCaptcha(source);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //Informer.RaiseOnResultReceived(ex);
                 }
@@ -235,6 +271,14 @@ namespace GOG
                     Informer.RaiseOnResultReceived(ex);
                 }
             }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

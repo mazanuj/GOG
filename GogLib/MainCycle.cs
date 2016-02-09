@@ -60,6 +60,7 @@ namespace GogLib
                     var res = new MenuStruct {Code = code, Result = result};
                     Informer.RaiseStrReceived(res);
                     Utils.Result.Add(res);
+                    Utils.SetIncrement();
                 });
             }
             catch (Exception ex)

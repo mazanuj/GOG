@@ -36,6 +36,14 @@
                 <Button Content="Stop" x:Name="ButtonStop" Width="100" Margin="0,0,100,0" Click="ButtonStop_OnClick"/>
                 <Button Content="Add codes" x:Name="ButtonCodes" Width="100" Margin="0,0,10,0" Click="ButtonAddCodes_OnClick"/>
                 <Button Content="Add proxies" x:Name="ButtonProx" Width="100" Margin="0,0,10,0" Click="ButtonAddCodes_OnClick"/>
+                <TextBlock FontSize="20" FontWeight="Black" Margin="70,0,0,0">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="Processed {0} from {1}">
+                            <Binding Path="Curr"/>
+                            <Binding Path="All"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
             </StackPanel>
 
             <StackPanel Grid.Row="1" Orientation="Horizontal">

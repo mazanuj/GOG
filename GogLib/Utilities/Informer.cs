@@ -6,10 +6,10 @@ namespace GogLib.Utilities
     public static class Informer
     {
         public delegate void InformMethodStr(string str);
-
         public delegate void InformMethodStruct(MenuStruct str);
 
         public static event InformMethodStr OnResultStr;
+        public static event InformMethodStr OnCountChanged;
         public static event InformMethodStruct OnResultStruct;
 
         public static void RaiseStrReceived(MenuStruct str)
@@ -21,6 +21,12 @@ namespace GogLib.Utilities
         public static void RaiseOnResultReceived(string str)
         {
             var handler = OnResultStr;
+            handler?.Invoke(str);
+        }
+
+        public static void RaiseOnCountChanged(string str)
+        {
+            var handler = OnCountChanged;
             handler?.Invoke(str);
         }
 

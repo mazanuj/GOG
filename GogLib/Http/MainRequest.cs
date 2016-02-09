@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using GogLib.Utilities;
 using xNet.Net;
 
 namespace GogLib.Http
