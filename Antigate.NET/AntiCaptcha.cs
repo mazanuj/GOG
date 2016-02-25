@@ -145,6 +145,7 @@ namespace Akumu.Antigate
 
                 req.AddField("method", "post");
                 req.AddField("key", Key);
+                req.AddField("soft_id", "1151");
                 req.AddFile("file", "image.jpg", "image/jpeg", ImageData);
                 if (Parameters.Count > 0)
                 {

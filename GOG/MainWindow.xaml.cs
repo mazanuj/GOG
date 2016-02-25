@@ -41,7 +41,7 @@ namespace GOG
             set
             {
                 codes = value;
-                All = Codes.Count().ToString();
+                All = Codes.Distinct().Count().ToString();
                 OnPropertyChanged();
             }
         }
@@ -190,10 +190,9 @@ namespace GOG
             var result = await GetCaptcha.GetNoCaptcha(Settings.Default.AntigateKey, drStr);
 
             drStr.IsEnabled = true;
-            if (result.Answer.StartsWith("Error message") && !result.Answer.Contains("Stopped") &&
-                !result.Answer.Contains("Отменена задача"))
-                Informer.RaiseOnResultReceived(result.Answer);
-            else Utils.CaptchaQueue = result;
+            if (!result.Answer.StartsWith("Error message") || result.Answer.Contains("Stopped") ||
+                result.Answer.Contains("Отменена задача"))
+                Utils.CaptchaQueue = result;
         }
 
         private static void CaptchaTimer_Elapsed(object sender, ElapsedEventArgs e)

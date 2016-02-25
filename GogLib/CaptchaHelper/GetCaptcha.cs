@@ -135,15 +135,15 @@ namespace GogLib.CaptchaHelper
                             await Task.Delay(2000);
 
                             var incorrect =
-                                WebDriver.FindElement(
-                                    By.XPath("//div[@class='rc-imageselect-incorrect-response']"))
-                                    .Text;
+                                    WebDriver.FindElement(
+                                        By.XPath("//div[@class='rc-imageselect-incorrect-response']"))
+                                        .Text;
                             var more =
                                 WebDriver.FindElement(
                                     By.XPath("//div[@class='rc-imageselect-error-select-more']"))
                                     .Text;
                             var one =
-                                WebDriver.FindElement(By.XPath("//div[@class='rc-imageselect-error-select-one']"))
+                                WebDriver.FindElement(By.XPath("//div[@class='rc-imageselect-error-dynamic-more']"))
                                     .Text;
 
                             if (incorrect == "" && more == "" && one == "")
