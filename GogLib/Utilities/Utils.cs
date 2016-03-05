@@ -14,7 +14,10 @@ namespace GogLib.Utilities
         private static readonly object Locker = new object();
         public static bool IsPermit { get; set; }
         public static List<DriverStruct> DriverList { get; }
-        public static List<MenuStruct> Result { get; }
+        public static List<MenuStruct> ResultAll { get; }
+        public static List<MenuStruct> ResultTrue { get; }
+        public static List<MenuStruct> ResultFalse { get; }
+        public static List<MenuStruct> Result403 { get; }
         private static readonly Queue<CaptchaStruct> captchaQueue;
         public static int CaptchaQueueCount => captchaQueue.Count;
         public static CancellationTokenSource CancelToken { get; set; }
@@ -34,7 +37,10 @@ namespace GogLib.Utilities
 
         static Utils()
         {
-            Result = new List<MenuStruct>();
+            ResultTrue = new List<MenuStruct>();
+            ResultFalse = new List<MenuStruct>();
+            Result403 = new List<MenuStruct>();
+            ResultAll = new List<MenuStruct>();
             DriverList = new List<DriverStruct>();
             captchaQueue = new Queue<CaptchaStruct>();
             CancelToken = new CancellationTokenSource();

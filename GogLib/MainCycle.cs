@@ -24,42 +24,67 @@ namespace GogLib
                 await codes.Distinct().ForEachAsync(dop, async code =>
                 {
                     string result;
-                    try
-                    {
-                        HttpRequest req;
-                        var challenge = string.Empty;
-                        lock (Locker)
+                    while (true)
+                    {                        
+                        try
                         {
-                            req = reqList[0];
-                            reqList.Move(req);
-
-                            while (Utils.IsPermit)
+                            HttpRequest req;
+                            var challenge = string.Empty;
+                            lock (Locker)
                             {
-                                if (Utils.CaptchaQueueCount > 0)
+                                req = reqList[0];
+                                reqList.Move(req);
+
+                                while (Utils.IsPermit)
                                 {
-                                    challenge = Utils.CaptchaQueue.Challenge;
-                                    break;
+                                    if (Utils.CaptchaQueueCount > 0)
+                                    {
+                                        challenge = Utils.CaptchaQueue.Challenge;
+                                        break;
+                                    }
+                                    Task.Delay(500).Wait();
                                 }
-                                Task.Delay(500).Wait();
+                            }
+
+                            if (!Utils.IsPermit)
+                                return;
+
+                            result = await MainRequest.Get(code, req, challenge);
+
+                            if (result.StartsWith("403"))
+                            {
+                                result = "403";
+                                //continue;
+                            }
+                            else
+                            {
+                                dynamic json = JObject.Parse(result);
+                                result = json.products[0]["title"].ToString();
                             }
                         }
-
-                        if (!Utils.IsPermit)
-                            return;
-
-                        result = await MainRequest.Get(code, req, challenge);
-
-                        dynamic json = JObject.Parse(result);
-                        result = json.products[0]["title"].ToString();
-                    }
-                    catch (Exception)
-                    {
-                        result = "Invalid";
+                        catch (Exception)
+                        {
+                            result = "Invalid";
+                        }
+                        break;
                     }
 
                     var res = new MenuStruct {Code = code, Result = result};
                     Informer.RaiseStrReceived(res);
-                    Utils.Result.Add(res);
+                    Utils.ResultAll.Add(res);
+                    switch (result)
+                    {
+                        case "403":
+                            Utils.Result403.Add(res);
+                            break;
+                        case "Invalid":
+                            Utils.ResultFalse.Add(res);
+                            break;
+                        default:
+                            Utils.ResultTrue.Add(res);
+                            break;
+                    }
+
                     Utils.SetIncrement();
                 });
             }
